@@ -15,6 +15,7 @@ import (
 	"log"
 	"mime"
 	"net/http"
+	"net/http/pprof"
 	"os"
 	"os/signal"
 	"path"
@@ -186,7 +187,13 @@ func Run(config WebConfig, tables typed.Tables) error {
 	server.mux.HandleFunc("/debug/events", trace.Events)
 	// Badger also uses expvar which exposes prometheus compatible metrics on /debug/vars
 	server.mux.HandleFunc("/debug/vars", expvar.Handler().ServeHTTP)
-
+	// Pprof
+	server.mux.HandleFunc("/debug/pprof/", pprof.Index)
+	server.mux.HandleFunc("/debug/pprof/cmdline", pprof.Cmdline)
+	server.mux.HandleFunc("/debug/pprof/profile", pprof.Profile)
+	server.mux.HandleFunc("/debug/pprof/symbol", pprof.Symbol)
+	server.mux.HandleFunc("/debug/pprof/trace", pprof.Trace)
+	//
 	server.mux.HandleFunc("/healthz", healthHandler())
 	server.mux.Handle("/metrics", promhttp.Handler())
 	server.mux.HandleFunc("/", indexHandler(config))
